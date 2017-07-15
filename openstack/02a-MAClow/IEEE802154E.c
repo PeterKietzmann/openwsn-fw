@@ -104,7 +104,7 @@ void     isr_ieee154e_timer(opentimers_id_t id);
 Call this function once before any other function in this module, possibly
 during boot-up.
 */
-void ieee154e_init() {
+void ieee154e_init(void) {
    
    // initialize variables
    memset(&ieee154e_vars,0,sizeof(ieee154e_vars_t));
@@ -471,7 +471,7 @@ status information about several modules in the OpenWSN stack.
 
 \returns TRUE if this function printed something, FALSE otherwise.
 */
-bool debugPrint_asn() {
+bool debugPrint_asn(void) {
    asn_t output;
    output.byte4         =  ieee154e_vars.asn.byte4;
    output.bytes2and3    =  ieee154e_vars.asn.bytes2and3;
@@ -488,7 +488,7 @@ status information about several modules in the OpenWSN stack.
 
 \returns TRUE if this function printed something, FALSE otherwise.
 */
-bool debugPrint_isSync() {
+bool debugPrint_isSync(void) {
    uint8_t output=0;
    output = ieee154e_vars.isSync;
    openserial_printStatus(STATUS_ISSYNC,(uint8_t*)&output,sizeof(uint8_t));
@@ -503,7 +503,7 @@ status information about several modules in the OpenWSN stack.
 
 \returns TRUE if this function printed something, FALSE otherwise.
 */
-bool debugPrint_macStats() {
+bool debugPrint_macStats(void) {
    // send current stats over serial
    openserial_printStatus(STATUS_MACSTATS,(uint8_t*)&ieee154e_stats,sizeof(ieee154e_stats_t));
    return TRUE;
@@ -513,7 +513,7 @@ bool debugPrint_macStats() {
 
 //======= SYNCHRONIZING
 
-port_INLINE void activity_synchronize_newSlot() {
+port_INLINE void activity_synchronize_newSlot(void) {
    // I'm in the middle of receiving a packet
    if (ieee154e_vars.state==S_SYNCRX) {
       return;
@@ -792,7 +792,7 @@ port_INLINE bool ieee154e_processIEs(OpenQueueEntry_t* pkt, uint16_t* lenIE) {
 
 //======= TX
 
-port_INLINE void activity_ti1ORri1() {
+port_INLINE void activity_ti1ORri1(void) {
    cellType_t  cellType;
    open_addr_t neighbor;
    uint8_t     i;
@@ -1071,7 +1071,7 @@ port_INLINE void activity_ti1ORri1() {
    }
 }
 
-port_INLINE void activity_ti2() {
+port_INLINE void activity_ti2(void) {
    
     // change state
     changeState(S_TXDATAPREPARE);
@@ -1124,7 +1124,7 @@ port_INLINE void activity_ti2() {
 #endif
 }
 
-port_INLINE void activity_tie1() {
+port_INLINE void activity_tie1(void) {
    // log the error
    openserial_printError(COMPONENT_IEEE802154E,ERR_MAXTXDATAPREPARE_OVERFLOW,
                          (errorparameter_t)ieee154e_vars.state,
@@ -1134,7 +1134,7 @@ port_INLINE void activity_tie1() {
    endSlot();
 }
 
-port_INLINE void activity_ti3() {
+port_INLINE void activity_ti3(void) {
     // change state
     changeState(S_TXDATADELAY);
 #ifdef SLOT_FSM_IMPLEMENTATION_MULTIPLE_TIMER_INTERRUPT
@@ -1154,7 +1154,7 @@ port_INLINE void activity_ti3() {
 #endif
 }
 
-port_INLINE void activity_tie2() {
+port_INLINE void activity_tie2(void) {
     // log the error
    openserial_printError(COMPONENT_IEEE802154E,ERR_WDRADIO_OVERFLOWS,
                          (errorparameter_t)ieee154e_vars.state,
@@ -1200,7 +1200,7 @@ port_INLINE void activity_ti4(PORT_TIMER_WIDTH capturedTime) {
 #endif
 }
 
-port_INLINE void activity_tie3() {
+port_INLINE void activity_tie3(void) {
     // log the error
     openserial_printError(COMPONENT_IEEE802154E,ERR_WDDATADURATION_OVERFLOWS,
                          (errorparameter_t)ieee154e_vars.state,
@@ -1278,7 +1278,7 @@ port_INLINE void activity_ti5(PORT_TIMER_WIDTH capturedTime) {
     }
 }
 
-port_INLINE void activity_ti6() {
+port_INLINE void activity_ti6(void) {
     // change state
     changeState(S_RXACKPREPARE);
 #ifdef SLOT_FSM_IMPLEMENTATION_MULTIPLE_TIMER_INTERRUPT
@@ -1312,7 +1312,7 @@ port_INLINE void activity_ti6() {
     changeState(S_RXACKREADY);
 }
 
-port_INLINE void activity_tie4() {
+port_INLINE void activity_tie4(void) {
    // log the error
    openserial_printError(COMPONENT_IEEE802154E,ERR_MAXRXACKPREPARE_OVERFLOWS,
                          (errorparameter_t)ieee154e_vars.state,
@@ -1322,7 +1322,7 @@ port_INLINE void activity_tie4() {
    endSlot();
 }
 
-port_INLINE void activity_ti7() {
+port_INLINE void activity_ti7(void) {
    // change state
    changeState(S_RXACKLISTEN);
    
@@ -1344,7 +1344,7 @@ port_INLINE void activity_ti7() {
 #endif
 }
 
-port_INLINE void activity_tie5() {
+port_INLINE void activity_tie5(void) {
     // indicate transmit failed to schedule to keep stats
     schedule_indicateTx(&ieee154e_vars.asn,FALSE);
    
@@ -1401,7 +1401,7 @@ port_INLINE void activity_ti8(PORT_TIMER_WIDTH capturedTime) {
 #endif
 }
 
-port_INLINE void activity_tie6() {
+port_INLINE void activity_tie6(void) {
     // log the error
     openserial_printError(COMPONENT_IEEE802154E,ERR_WDACKDURATION_OVERFLOWS,
                          (errorparameter_t)ieee154e_vars.state,
@@ -1556,7 +1556,7 @@ port_INLINE void activity_ti9(PORT_TIMER_WIDTH capturedTime) {
 
 //======= RX
 
-port_INLINE void activity_ri2() {
+port_INLINE void activity_ri2(void) {
     // change state
     changeState(S_RXDATAPREPARE);
 #ifdef SLOT_FSM_IMPLEMENTATION_MULTIPLE_TIMER_INTERRUPT
@@ -1587,7 +1587,7 @@ port_INLINE void activity_ri2() {
     changeState(S_RXDATAREADY);
 }
 
-port_INLINE void activity_rie1() {
+port_INLINE void activity_rie1(void) {
    // log the error
    openserial_printError(COMPONENT_IEEE802154E,ERR_MAXRXDATAPREPARE_OVERFLOWS,
                          (errorparameter_t)ieee154e_vars.state,
@@ -1597,7 +1597,7 @@ port_INLINE void activity_rie1() {
    endSlot();
 }
 
-port_INLINE void activity_ri3() {
+port_INLINE void activity_ri3(void) {
     // change state
     changeState(S_RXDATALISTEN);
     
@@ -1619,7 +1619,7 @@ port_INLINE void activity_ri3() {
 #endif
 }
 
-port_INLINE void activity_rie2() {
+port_INLINE void activity_rie2(void) {
    // abort
    endSlot();
 }
@@ -1661,7 +1661,7 @@ port_INLINE void activity_ri4(PORT_TIMER_WIDTH capturedTime) {
 #endif
 }
 
-port_INLINE void activity_rie3() {
+port_INLINE void activity_rie3(void) {
     // log the error
     openserial_printError(COMPONENT_IEEE802154E,ERR_WDDATADURATION_OVERFLOWS,
                          (errorparameter_t)ieee154e_vars.state,
@@ -1927,7 +1927,7 @@ port_INLINE void activity_ri5(PORT_TIMER_WIDTH capturedTime) {
     endSlot();
 }
 
-port_INLINE void activity_ri6() {
+port_INLINE void activity_ri6(void) {
    
     // change state
     changeState(S_TXACKPREPARE);
@@ -2015,7 +2015,7 @@ port_INLINE void activity_ri6() {
 #endif
 }
 
-port_INLINE void activity_rie4() {
+port_INLINE void activity_rie4(void) {
     // log the error
     openserial_printError(COMPONENT_IEEE802154E,ERR_MAXTXACKPREPARE_OVERFLOWS,
                          (errorparameter_t)ieee154e_vars.state,
@@ -2025,7 +2025,7 @@ port_INLINE void activity_rie4() {
     endSlot();
 }
 
-port_INLINE void activity_ri7() {
+port_INLINE void activity_ri7(void) {
     // change state
     changeState(S_TXACKDELAY);
 #ifdef SLOT_FSM_IMPLEMENTATION_MULTIPLE_TIMER_INTERRUPT
@@ -2045,7 +2045,7 @@ port_INLINE void activity_ri7() {
 #endif
 }
 
-port_INLINE void activity_rie5() {
+port_INLINE void activity_rie5(void) {
    // log the error
    openserial_printError(COMPONENT_IEEE802154E,ERR_WDRADIOTX_OVERFLOWS,
                          (errorparameter_t)ieee154e_vars.state,
@@ -2090,7 +2090,7 @@ port_INLINE void activity_ri8(PORT_TIMER_WIDTH capturedTime) {
 #endif
 }
 
-port_INLINE void activity_rie6() {
+port_INLINE void activity_rie6(void) {
    // log the error
    openserial_printError(COMPONENT_IEEE802154E,ERR_WDACKDURATION_OVERFLOWS,
                          (errorparameter_t)ieee154e_vars.state,
@@ -2204,7 +2204,7 @@ port_INLINE bool isValidAck(ieee802154_header_iht* ieee802514_header, OpenQueueE
 
 //======= ASN handling
 
-port_INLINE void incrementAsnOffset() {
+port_INLINE void incrementAsnOffset(void) {
    frameLength_t frameLength;
    
    // increment the asn
@@ -2226,7 +2226,7 @@ port_INLINE void incrementAsnOffset() {
    ieee154e_vars.asnOffset   = (ieee154e_vars.asnOffset+1)%16;
 }
 
-port_INLINE void ieee154e_resetAsn(){
+port_INLINE void ieee154e_resetAsn(void){
     // reset slotoffset
     ieee154e_vars.slotOffset     = 0;
     ieee154e_vars.asnOffset      = 0;
@@ -2245,7 +2245,7 @@ port_INLINE void ieee154e_getAsn(uint8_t* array) {
    array[4]         =  ieee154e_vars.asn.byte4;
 }
 
-port_INLINE uint16_t ieee154e_getTimeCorrection() {
+port_INLINE uint16_t ieee154e_getTimeCorrection(void) {
     int16_t returnVal;
     
     returnVal = (uint16_t)(ieee154e_vars.timeCorrection);
@@ -2464,7 +2464,7 @@ port_INLINE void asnStoreFromEB(uint8_t* asn) {
    ieee154e_vars.asn.byte4        =     asn[4];
 }
 
-port_INLINE void ieee154e_syncSlotOffset() {
+port_INLINE void ieee154e_syncSlotOffset(void) {
     frameLength_t frameLength;
     uint32_t slotOffset;
     uint8_t i;
@@ -2521,7 +2521,7 @@ void ieee154e_setSlotDuration(uint16_t duration){
     ieee154e_vars.slotDuration = duration;
 }
 
-uint16_t ieee154e_getSlotDuration(){
+uint16_t ieee154e_getSlotDuration(void){
     return ieee154e_vars.slotDuration;
 }
 
@@ -2693,7 +2693,7 @@ void notif_receive(OpenQueueEntry_t* packetReceived) {
 
 //======= stats
 
-port_INLINE void resetStats() {
+port_INLINE void resetStats(void) {
    ieee154e_stats.numSyncPkt      =    0;
    ieee154e_stats.numSyncAck      =    0;
    ieee154e_stats.minCorrection   =  127;
@@ -2804,7 +2804,7 @@ have been sent to the upper layer. Similarly, in a Tx slot, the sendDone
 function should already have been done. If this is not the case, this function
 will do that for you, but assume that something went wrong.
 */
-void endSlot() {
+void endSlot(void) {
    // turn off the radio
    radio_rfOff();
    
@@ -2896,6 +2896,6 @@ void endSlot() {
    changeState(S_SLEEP);
 }
 
-bool ieee154e_isSynch(){
+bool ieee154e_isSynch(void){
    return ieee154e_vars.isSync;
 }
