@@ -11,6 +11,7 @@
 #include "sctimer.h"
 #include "radio.h"
 #include "board.h"
+#include "thread.h"
 
 #define ENABLE_DEBUG (0)
 #include "debug.h"
@@ -23,7 +24,7 @@ void board_init_ow(void){
 }
 
 void board_sleep(void){
-    puts("OpenWSN board_sleep");
+    thread_yield();
 }
 
 void board_reset(void){
