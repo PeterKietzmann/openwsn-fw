@@ -34,27 +34,29 @@ static msg_t _queue[OW_NETDEV_QUEUE_LEN];
 //=========================== variables =======================================
 
 typedef struct {
-   radio_capture_cbt         startFrame_cb;
-   radio_capture_cbt         endFrame_cb;
-   radio_state_t             state; 
+    radio_capture_cbt         startFrame_cb;
+    radio_capture_cbt         endFrame_cb;
+    radio_state_t             state;
+    netdev_t                 *dev;
 } radio_vars_t;
 
 radio_vars_t radio_vars;
-
-netdev_t *netdev;
 
 static void _event_cb(netdev_t *dev, netdev_event_t event);
 static void *_event_loop(void *arg);
 
 // admin
-void radio_init(void){
+void radio_init(void) {
 
     uint16_t dev_type;
+    // clear variables
+    memset(&radio_vars,0,sizeof(radio_vars_t));
+    radio_vars.state = RADIOSTATE_STOPPED;
 
 #ifdef MODULE_AT86RF2XX
+    radio_vars.dev = (netdev_t *)&at86rf2xx_dev.netdev.netdev;
     at86rf2xx_setup(&at86rf2xx_dev, &at86rf2xx_params[0]);
 #endif
-    netdev = (netdev_t *)&at86rf2xx_dev.netdev.netdev;
 
     if (_pid <= KERNEL_PID_UNDEF) {
         _pid = thread_create(_stack, OW_NETDEV_STACKSIZE, OW_NETDEV_PRIO,
@@ -65,84 +67,135 @@ void radio_init(void){
         }
     }
 
-    netdev->driver->init(netdev);
-    netdev->event_callback = _event_cb;
-    if (netdev->driver->get(netdev, NETOPT_DEVICE_TYPE, &dev_type,
-                            sizeof(dev_type)) < 0) {
+    radio_vars.dev->driver->init(radio_vars.dev);
+    radio_vars.dev->event_callback = _event_cb;
+    if (radio_vars.dev->driver->get(radio_vars.dev, NETOPT_DEVICE_TYPE, &dev_type,
+                                    sizeof(dev_type)) < 0) {
         DEBUG("OW couldn't get device type\n");
     }
 
-    /* Enable TX with preloading */
-    netdev->driver->set(netdev, NETOPT_PRELOADING, (void *)NETOPT_ENABLE, sizeof(netopt_enable_t));
+    netopt_enable_t enable;
+    enable = NETOPT_ENABLE;
+    radio_vars.dev->driver->set(radio_vars.dev, NETOPT_PROMISCUOUSMODE, &(enable), sizeof(netopt_enable_t));
     /* Enable needed IRQs */
-    netdev->driver->set(netdev, NETOPT_RX_START_IRQ, (void *)NETOPT_ENABLE, sizeof(netopt_enable_t));
+    enable = NETOPT_ENABLE;
+    radio_vars.dev->driver->set(radio_vars.dev, NETOPT_RX_START_IRQ, &(enable), sizeof(netopt_enable_t));
+    enable = NETOPT_ENABLE;
+    radio_vars.dev->driver->set(radio_vars.dev, NETOPT_RX_END_IRQ, &(enable), sizeof(netopt_enable_t));
+    enable = NETOPT_DISABLE;
+    radio_vars.dev->driver->set(radio_vars.dev, NETOPT_AUTOACK, &(enable), sizeof(netopt_enable_t));
+    /* Enable TX with preloading */
+    enable = NETOPT_ENABLE;
+    radio_vars.dev->driver->set(radio_vars.dev, NETOPT_PRELOADING, &(enable), sizeof(netopt_enable_t));
+    enable = NETOPT_ENABLE;
+    radio_vars.dev->driver->set(radio_vars.dev, NETOPT_RAWMODE, &(enable), sizeof(netopt_enable_t));
+    uint8_t retrans = 0;
+    radio_vars.dev->driver->set(radio_vars.dev, NETOPT_RETRANS, &(retrans), sizeof(uint8_t));
 
+    radio_vars.state          = RADIOSTATE_RFOFF;
 }
 
 void radio_setStartFrameCb(radio_capture_cbt cb) {
-   radio_vars.startFrame_cb  = cb;
+    radio_vars.startFrame_cb  = cb;
 }
 
 void radio_setEndFrameCb(radio_capture_cbt cb) {
-   radio_vars.endFrame_cb    = cb;
+    radio_vars.endFrame_cb    = cb;
 }
 
 // reset
-void radio_reset(void){
-    netdev->driver->init(netdev);
+void radio_reset(void) {
+    netopt_state_t state = NETOPT_STATE_RESET;
+    radio_vars.dev->driver->set(radio_vars.dev, NETOPT_STATE, &(state), sizeof(netopt_state_t));
 }
 // RF admin
-void radio_setFrequency(uint8_t frequency){
-    netdev->driver->set(netdev, NETOPT_CHANNEL, &frequency, sizeof(frequency));
+void radio_setFrequency(uint8_t frequency) {
+    // change state
+    radio_vars.state = RADIOSTATE_SETTING_FREQUENCY;
+
+    // configure the radio to the right frequency
+    radio_vars.dev->driver->set(radio_vars.dev, NETOPT_CHANNEL, &(frequency), sizeof(uint8_t));
+
+    // change state
+    radio_vars.state = RADIOSTATE_FREQUENCY_SET;
 }
-void radio_rfOn(void){
-    netdev->driver->set(netdev, NETOPT_STATE, (void *)NETOPT_STATE_IDLE, sizeof(netopt_state_t));
+
+void radio_rfOn(void) {
+    netopt_state_t state = NETOPT_STATE_IDLE;
+    radio_vars.dev->driver->set(radio_vars.dev, NETOPT_STATE, &(state), sizeof(netopt_state_t));
 }
-void radio_rfOff(void){
-    netdev->driver->set(netdev, NETOPT_STATE, (void *)NETOPT_STATE_OFF, sizeof(netopt_state_t));
+
+void radio_rfOff(void) {
+    netopt_state_t state = NETOPT_STATE_OFF;
+    radio_vars.dev->driver->set(radio_vars.dev, NETOPT_STATE, &(state), sizeof(netopt_state_t));
 }
 // TX
-void radio_loadPacket(uint8_t* packet, uint16_t len){
+void radio_loadPacket(uint8_t* packet, uint16_t len) {
     DEBUG("OW radio_loadPacket\n");
-    /* NETOPT_PRELOADING w as enabled in the init function so this 
-    simply loads data to the device buffer */
+    /* NETOPT_PRELOADING w as enabled in the init function so this
+       simply loads data to the device buffer */
     struct iovec pkt = {
         .iov_base = (void *)packet,
         .iov_len = (size_t)len,   /* FCS is written by driver */
     };
-    if(netdev->driver->send(netdev, &pkt, 1) < 0){
+    if (radio_vars.dev->driver->send(radio_vars.dev, &pkt, 1) < 0) {
         DEBUG("OW couldn't load pkt\n");
     }
+    // change state
+    radio_vars.state = RADIOSTATE_PACKET_LOADED;
 }
 
-// TODO do I need that?
-void radio_txEnable(void){
+void radio_txEnable(void) {
     DEBUG("radio_txEnable\n");
-    // TODO: turn on device?
-    radio_rfOn();
+
+    // change state
+    radio_vars.state = RADIOSTATE_ENABLING_TX;
+
+    // change state
+    radio_vars.state = RADIOSTATE_TX_ENABLED;
 }
-void radio_txNow(void){
-    netdev->driver->set(netdev, NETOPT_STATE, (void *)NETOPT_STATE_TX, sizeof(netopt_state_t));
+void radio_txNow(void) {
+    netopt_state_t state = NETOPT_STATE_TX;
+    radio_vars.dev->driver->set(radio_vars.dev, NETOPT_STATE, &state, sizeof(netopt_state_t));
 }
 // RX
-void radio_rxEnable(void){
+void radio_rxEnable(void) {
     DEBUG("radio_rxEnable\n");
-    netdev->driver->set(netdev, NETOPT_STATE, (void *)NETOPT_STATE_IDLE, sizeof(netopt_state_t));
+    // change state
+    radio_vars.state = RADIOSTATE_ENABLING_RX;
 
+    netopt_state_t state = NETOPT_STATE_IDLE;
+    radio_vars.dev->driver->set(radio_vars.dev, NETOPT_STATE, &(state), sizeof(netopt_state_t));
+
+    // change state
+    radio_vars.state = RADIOSTATE_LISTENING;
 }
 void radio_rxNow(void) {
-   // nothing to do
+    // nothing to do
 }
 void radio_getReceivedFrame(uint8_t* bufRead,
                             uint8_t* lenRead,
                             uint8_t  maxBufLen,
                             int8_t* rssi,
                             uint8_t* lqi,
-                            bool* crc){
+                            bool* crc) {
+    int bytes_expected = radio_vars.dev->driver->recv(radio_vars.dev, NULL, 0, NULL);
 
-    int len = netdev->driver->recv(netdev, bufRead, (size_t)&lenRead, NULL);
-    (void)len;
-    *crc=true;
+    if (bytes_expected) {
+        netdev_ieee802154_rx_info_t rx_info;
+        int nread = radio_vars.dev->driver->recv(radio_vars.dev, bufRead, bytes_expected, &rx_info);
+        *crc = true;
+        if (nread <= 0) {
+            return;
+        }
+        *lenRead = nread;
+
+        *lqi  = 0;
+        *rssi = 0;
+
+        /* TODO: check CRC */
+        *crc = true;
+    }
 }
 
 // interrupt handlers
@@ -165,22 +218,22 @@ static void _event_cb(netdev_t *dev, netdev_event_t event)
         // TODO is this a proper location?
         /* capture the time */
         PORT_TIMER_WIDTH capturedTime = sctimer_readCounter();
+        DEBUG("ow_netdev: event triggered -> %i\n", event);
         switch (event) {
-            DEBUG("ow_netdev: event triggered -> %i\n", event);
             case NETDEV_EVENT_RX_STARTED:
-                radio_vars.startFrame_cb(capturedTime);
-                DEBUG("NETDEV_EVENT_RX_STARTED\n");
-                break;
+            radio_vars.startFrame_cb(capturedTime);
+            DEBUG("NETDEV_EVENT_RX_STARTED\n");
+            break;
             case NETDEV_EVENT_RX_COMPLETE:
-                radio_vars.endFrame_cb(capturedTime);
-                DEBUG("NETDEV_EVENT_RX_COMPLETE\n");
-                break;
+            radio_vars.endFrame_cb(capturedTime);
+            DEBUG("NETDEV_EVENT_RX_COMPLETE\n");
+            break;
             case NETDEV_EVENT_TX_COMPLETE:
-                radio_vars.endFrame_cb(capturedTime);
-                DEBUG("NETDEV_EVENT_TX_COMPLETE\n");
-                break;
+            radio_vars.endFrame_cb(capturedTime);
+            DEBUG("NETDEV_EVENT_TX_COMPLETE\n");
+            break;
             default:
-                break;
+            break;
         }
     }
 }
