@@ -24,7 +24,6 @@ void board_init_ow(void){
 }
 
 void board_sleep(void){
-    thread_yield();
 }
 
 void board_reset(void){
