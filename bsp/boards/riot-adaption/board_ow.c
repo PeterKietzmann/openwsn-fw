@@ -11,6 +11,7 @@
 #include "sctimer.h"
 #include "radio.h"
 #include "board.h"
+#include "debugpins_riot.h"
 #include "thread.h"
 
 #define ENABLE_DEBUG (0)
@@ -18,6 +19,7 @@
 
 void board_init_ow(void){
     puts("OpenWSN board_init");
+    debugpins_riot_init(NULL);
     sctimer_init();
     // Done in RIOT by auto_init?
     radio_init();

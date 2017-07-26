@@ -12,7 +12,14 @@
 #include <string.h>
 
 /** holds the internal configuration for debug pins */
-static debugpins_config_t configuration;
+static debugpins_config_t configuration = {
+    GPIO_UNDEF,
+    GPIO_UNDEF,
+    GPIO_UNDEF,
+    GPIO_UNDEF,
+    GPIO_UNDEF,
+    GPIO_UNDEF
+};
 
 /**
  * Sets the debug pins for a specific board for OpenWSN
