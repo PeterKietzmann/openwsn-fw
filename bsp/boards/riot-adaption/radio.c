@@ -42,8 +42,6 @@ typedef struct {
 
 radio_vars_t radio_vars;
 
-netdev_t *netdev;
-
 static void _event_cb(netdev_t *dev, netdev_event_t event);
 static void *_event_loop(void *arg);
 
@@ -140,7 +138,7 @@ void radio_loadPacket(uint8_t* packet, uint16_t len) {
         .iov_base = (void *)packet,
         .iov_len = (size_t)len,   /* FCS is written by driver */
     };
-    if(netdev->driver->send(netdev, &pkt, 1) < 0) {
+    if (radio_vars.dev->driver->send(radio_vars.dev, &pkt, 1) < 0) {
         DEBUG("OW couldn't load pkt\n");
     }
     // change state
@@ -157,7 +155,8 @@ void radio_txEnable(void) {
     radio_vars.state = RADIOSTATE_TX_ENABLED;
 }
 void radio_txNow(void) {
-    netdev->driver->set(netdev, NETOPT_STATE, (void *)NETOPT_STATE_TX, sizeof(netopt_state_t));
+    netopt_state_t state = NETOPT_STATE_TX;
+    radio_vars.dev->driver->set(radio_vars.dev, NETOPT_STATE, &state, sizeof(netopt_state_t));
 }
 // RX
 void radio_rxEnable(void) {
