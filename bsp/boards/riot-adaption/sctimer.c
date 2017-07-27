@@ -104,7 +104,7 @@ void sctimer_setCompare(uint32_t val){
         // the timer is already late, schedule the ISR cb function manually
         // It is not executed in interrupt context but won't be
         // interrupted as interrupts were disabled
-        sctimer_isr_internal(NULL);
+        rtt_set_alarm(rtt_get_counter()+2, sctimer_isr_internal, NULL);
     } else {
         if (val-rtt_get_counter()<MINIMUM_COMPAREVALE_ADVANCE){
             sctimer_isr_internal(NULL);
