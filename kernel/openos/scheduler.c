@@ -63,7 +63,9 @@ void scheduler_start(void) {
       debugpins_task_clr();
       board_sleep();
       debugpins_task_set();                      // IAR should halt here if nothing to do
+      puts("next");
    }
+   puts("end");
 }
 
  void scheduler_push_task(task_cbt cb, task_prio_t prio) {
