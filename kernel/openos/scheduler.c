@@ -49,7 +49,10 @@ void scheduler_start(void) {
          ENABLE_INTERRUPTS();
 
          // execute the current task
+         unsigned start = sctimer_readCounter();
          pThisTask->cb();
+         unsigned end = sctimer_readCounter();
+         leds_radio_toggle();
          
          // free up this task container
          pThisTask->cb            = NULL;
@@ -57,6 +60,9 @@ void scheduler_start(void) {
          pThisTask->next          = NULL;
          scheduler_dbg.numTasksCur--;
       }
+      debugpins_task_clr();
+      board_sleep();
+      debugpins_task_set();                      // IAR should halt here if nothing to do
    }
 }
 
