@@ -1,13 +1,13 @@
 /**
- * @brief Provides an adaption of OpenWSN LED handling to RIOTs handling of LEDs. 
+ * @brief Provides an adaption of OpenWSN LED handling to RIOTs handling of LEDs.
  *
- * The adaption aims to support every (suited) RIOT board. However, this comes with the 
- * limiation of not providing leds_{type}_isOn function calls since these differ from 
+ * The adaption aims to support every (suited) RIOT board. However, this comes with the
+ * limiation of not providing leds_{type}_isOn function calls since these differ from
  * board to board. Also, this adaption assumes that there are four LEDs, while some boards
  * such as the iotlab-m3 have only three LEDs.
  *
  * @author      Peter Kietzmann <peter.kietzmann@haw-hamburg.de>
- * @author      Michael Frey <michael.frey@msasafety.com> 
+ * @author      Michael Frey <michael.frey@msasafety.com>
  */
 
 #include "leds.h"
@@ -22,25 +22,25 @@
 #define LED0_ON
 #define LED0_OFF
 #define LED0_TOGGLE
-#endif 
-
-#ifndef LED1_PIN
-#define LED1_ON
-#define LED1_OFF
-#define LED1_TOGGLE
-#endif 
+#endif
 
 #ifndef LED2_PIN
 #define LED2_ON
 #define LED2_OFF
 #define LED2_TOGGLE
-#endif 
+#endif
+
+#ifndef LED1_PIN
+#define LED1_ON
+#define LED1_OFF
+#define LED1_TOGGLE
+#endif
 
 #ifndef LED3_PIN
 #define LED3_ON
 #define LED3_OFF
 #define LED3_TOGGLE
-#endif 
+#endif
 
 /**
  * Provides a simple delay by means of iterating over a 32-bit variable
@@ -59,15 +59,15 @@ void leds_init(void) {
     #endif
 
     /** led color: orange (RADIO) */
-    #ifdef LED1_PIN
-        gpio_init(LED1_PIN, GPIO_OUT);
-        gpio_set(LED1_PIN);
-    #endif
-
-    /** led color: green (SYNC) */
     #ifdef LED2_PIN
         gpio_init(LED2_PIN, GPIO_OUT);
         gpio_set(LED2_PIN);
+    #endif
+
+    /** led color: green (SYNC) */
+    #ifdef LED1_PIN
+        gpio_init(LED1_PIN, GPIO_OUT);
+        gpio_set(LED1_PIN);
     #endif
 
     /** led color: yellow */
@@ -95,9 +95,9 @@ uint8_t leds_error_isOn(void) {
 }
 
 /**
- * Let the error led blink for "10 seconds". 
+ * Let the error led blink for "10 seconds".
  */
-void leds_error_blink(void) {    
+void leds_error_blink(void) {
 	for (uint8_t i = 0; i < 16; i++) {
         leds_error_toggle();
         leds_delay();
@@ -105,15 +105,15 @@ void leds_error_blink(void) {
 }
 
 void leds_radio_on(void) {
-   	LED1_ON;
+   	LED2_ON;
 }
 
 void leds_radio_off(void) {
-   	LED1_OFF;
+   	LED2_OFF;
 }
 
 void leds_radio_toggle(void) {
-   	LED1_TOGGLE;
+   	LED2_TOGGLE;
 }
 
 uint8_t leds_radio_isOn(void) {
@@ -122,15 +122,15 @@ uint8_t leds_radio_isOn(void) {
 }
 
 void leds_sync_on(void) {
-	LED2_ON;
+	LED1_ON;
 }
 
 void leds_sync_off(void) {
-	LED2_OFF;
+	LED1_OFF;
 }
 
 void leds_sync_toggle(void) {
-	LED2_TOGGLE;
+	LED1_TOGGLE;
 }
 
 uint8_t leds_sync_isOn(void) {
