@@ -345,7 +345,10 @@ This function is called when sctimer interrupt happens. The function looks the
 whole timer buffer and find out the correct timer responding to the interrupt
 and call the callback recorded for that timer.
  */
+extern void ps(void);
 void opentimers_timer_callback(void){
+    puts("=====");
+    ps();
     uint8_t i;
     uint8_t j;
     uint8_t idToCallCB;
@@ -466,4 +469,6 @@ void opentimers_timer_callback(void){
     opentimers_vars.index = (opentimers_vars.index+1)&0x0F;
     sctimer_setCompare(opentimers_vars.currentTimeout);
     opentimers_vars.running        = TRUE;
+    ps();
+    puts("-----");
 }
