@@ -1313,6 +1313,7 @@ port_INLINE void activity_ti6(void) {
 }
 
 port_INLINE void activity_tie4(void) {
+        leds_radio_toggle();
    // log the error
    openserial_printError(COMPONENT_IEEE802154E,ERR_MAXRXACKPREPARE_OVERFLOWS,
                          (errorparameter_t)ieee154e_vars.state,
