@@ -114,7 +114,9 @@ void radio_setFrequency(uint8_t frequency) {
     radio_vars.state = RADIOSTATE_SETTING_FREQUENCY;
 
     // configure the radio to the right frequency
-    radio_vars.dev->driver->set(radio_vars.dev, NETOPT_CHANNEL, &(frequency), sizeof(uint8_t));
+    // channels are 16bit in RITOS
+    uint16_t chan = frequency;
+    radio_vars.dev->driver->set(radio_vars.dev, NETOPT_CHANNEL, &(chan), sizeof(uint8_t));
 
     // change state
     radio_vars.state = RADIOSTATE_FREQUENCY_SET;
