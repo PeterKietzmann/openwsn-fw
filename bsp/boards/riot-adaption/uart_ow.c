@@ -1,6 +1,12 @@
 /**
 \brief riot-adaption-specific definition of the "uart" bsp module.
 
+
+\author Stefan Mehner <stefan.mehner@b-tu.de>, July 2017
+\author Peter Kietzmann  <peter.kietzmann@haw-hamburg.de>, July 2017
+
+
+This code is mostly copied from openwsn-fw/bsp/boards/iot-lab_M3/uart.c
 */
 
 #include "uart_ow.h"
@@ -8,6 +14,7 @@
 #include "periph/uart.h"
 
 #define ENABLE_DEBUG                (1)
+
 #include "debug.h"
 
 //=========================== defines =========================================
@@ -21,6 +28,8 @@ typedef struct {
 
 uart_vars_t uart_vars;
 
+uint8_t received_byte = 0;
+
 //=========================== prototypes ======================================
 
 //=========================== public ==========================================
@@ -28,16 +37,11 @@ uart_vars_t uart_vars;
 void uart_init_ow(void) {
     DEBUG("uart_init_ow\n");
 
-    // 115200 baud
     uint32_t baudrate = 115200;
 
-    // clocking source
-    // modulation
+    /* the main part of the initialization is done in the RIOT uart_init()*/
+    uart_init(UART_DEV(1), baudrate, NULL, NULL);
 
-    // enable UART1 TX/RX
-    // clear UART1 reset bit
-
-    uart_init(UART_DEV(1), baudrate, uart_rx_isr, NULL);
     DEBUG("Done initializing uart\n");
 }
 
@@ -45,54 +49,33 @@ void uart_setCallbacks(uart_tx_cbt txCb, uart_rx_cbt rxCb) {
     DEBUG("uart_setCallbacks\n");
     uart_vars.txCb = txCb;
     uart_vars.rxCb = rxCb;
-
-
-
 }
 
 void uart_enableInterrupts(void){
-  // USART_ITConfig(USART1, USART_IT_TC,   ENABLE);
-  // USART_ITConfig(USART1, USART_IT_RXNE, ENABLE);
-
-
-
+  DEBUG("uart_enableInterrupts\n");
 }
 
 void uart_disableInterrupts(void){
-
+  DEBUG("uart_disableInterrupts\n");
 }
 
 void uart_clearRxInterrupts(void){
-    // clear Rx interrupt flag, so another byte can be captured.
+    DEBUG("uart_clearRxInterrupts\n");
 }
 
 void uart_clearTxInterrupts(void){
     // clear tx interrupt flag
+    DEBUG("uart_clearTxInterrupts\n");
 }
 
 void uart_writeByte(uint8_t byteToWrite){
     // write one byte to UART TX BUFFER
-
-    // uart_write(UART_STDIO_DEV, byteToWrite, 1);
+    DEBUG("uart_writeByte \n");
+    uart_write(UART_DEV(1), &byteToWrite, 1);
 }
 
 uint8_t uart_readByte(void){
+  DEBUG("uart_readByte\n");
     // read one byte to UART RX BUFFER
   return 0;
-}
-
-//=========================== private =========================================
-
-//=========================== interrupt handlers ==============================
-
-/*void uart_tx_isr(void *arg, uint8_t data) {
-   uart_clearTxInterrupts(); // TODO: do not clear, but disable when done
-   uart_vars.txCb();
-}*/
-
-void uart_rx_isr(void *arg, uint8_t data) {
-  (void)arg;
-  (void)data;
-   uart_clearRxInterrupts(); // TODO: do not clear, but disable when done
-   uart_vars.rxCb();
 }
