@@ -13,8 +13,7 @@
 */
 
 #include "stdint.h"
-#include "board.h"
- 
+
 //=========================== define ==========================================
 
 //=========================== typedef =========================================
@@ -38,14 +37,11 @@ void    uart_disableInterrupts(void);
 void    uart_clearRxInterrupts(void);
 void    uart_clearTxInterrupts(void);
 void    uart_writeByte(uint8_t byteToWrite);
-#ifdef FASTSIM
-void    uart_writeCircularBuffer_FASTSIM(uint8_t* buffer, uint8_t* outputBufIdxR, uint8_t* outputBufIdxW);
-#endif
 uint8_t uart_readByte(void);
 
 // interrupt handlers
-kick_scheduler_t uart_tx_isr(void);
-kick_scheduler_t uart_rx_isr(void);
+//void uart_tx_isr(void);
+void uart_rx_isr(void *arg, uint8_t data);
 
 /**
 \}
