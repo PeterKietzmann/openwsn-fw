@@ -18,9 +18,7 @@
 
 void board_init_ow(void){
     puts("OpenWSN board_init");
-    sctimer_init();
-
-    uart_init_ow();
+    //sctimer_init();
 
     // Done in RIOT by auto_init?
     radio_init();

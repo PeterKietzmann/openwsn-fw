@@ -4,9 +4,11 @@
 */
 
 #include "uart_ow.h"
-// #include "board_ow.h"
 #include "uart_stdio.h"
 #include "periph/uart.h"
+
+#define ENABLE_DEBUG                (1)
+#include "debug.h"
 
 //=========================== defines =========================================
 
@@ -24,6 +26,7 @@ uart_vars_t uart_vars;
 //=========================== public ==========================================
 
 void uart_init_ow(void) {
+    DEBUG("uart_init_ow\n");
 
     // 115200 baud
     uint32_t baudrate = 115200;
@@ -34,11 +37,12 @@ void uart_init_ow(void) {
     // enable UART1 TX/RX
     // clear UART1 reset bit
 
-    uart_init(UART_STDIO_DEV, baudrate, uart_rx_isr, NULL);
-
+    uart_init(UART_DEV(1), baudrate, uart_rx_isr, NULL);
+    DEBUG("Done initializing uart\n");
 }
 
 void uart_setCallbacks(uart_tx_cbt txCb, uart_rx_cbt rxCb) {
+    DEBUG("uart_setCallbacks\n");
     uart_vars.txCb = txCb;
     uart_vars.rxCb = rxCb;
 
@@ -81,12 +85,14 @@ uint8_t uart_readByte(void){
 
 //=========================== interrupt handlers ==============================
 
-void uart_tx_isr(void) {
+/*void uart_tx_isr(void *arg, uint8_t data) {
    uart_clearTxInterrupts(); // TODO: do not clear, but disable when done
    uart_vars.txCb();
-}
+}*/
 
-void uart_rx_isr(void) {
+void uart_rx_isr(void *arg, uint8_t data) {
+  (void)arg;
+  (void)data;
    uart_clearRxInterrupts(); // TODO: do not clear, but disable when done
    uart_vars.rxCb();
 }
