@@ -130,6 +130,10 @@ void radio_rfOn(void) {
 void radio_rfOff(void) {
     netopt_state_t state = NETOPT_STATE_OFF;
     radio_vars.dev->driver->set(radio_vars.dev, NETOPT_STATE, &(state), sizeof(netopt_state_t));
+    leds_radio_off();
+
+    // change state
+    radio_vars.state = RADIOSTATE_RFOFF;
 }
 // TX
 void radio_loadPacket(uint8_t* packet, uint16_t len) {
@@ -153,6 +157,7 @@ void radio_txEnable(void) {
     // change state
     radio_vars.state = RADIOSTATE_ENABLING_TX;
 
+   leds_radio_on();
     // change state
     radio_vars.state = RADIOSTATE_TX_ENABLED;
 }
@@ -165,6 +170,8 @@ void radio_rxEnable(void) {
     DEBUG("radio_rxEnable\n");
     // change state
     radio_vars.state = RADIOSTATE_ENABLING_RX;
+
+   leds_radio_on();
 
     netopt_state_t state = NETOPT_STATE_IDLE;
     radio_vars.dev->driver->set(radio_vars.dev, NETOPT_STATE, &(state), sizeof(netopt_state_t));
