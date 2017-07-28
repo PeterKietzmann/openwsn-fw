@@ -1,6 +1,7 @@
 
 
 #include "radio.h"
+#include "leds.h"
 #include "sctimer.h"
 
 #include "net/netdev.h"

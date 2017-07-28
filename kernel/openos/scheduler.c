@@ -49,10 +49,7 @@ void scheduler_start(void) {
          ENABLE_INTERRUPTS();
 
          // execute the current task
-         unsigned start = sctimer_readCounter();
          pThisTask->cb();
-         unsigned end = sctimer_readCounter();
-         leds_radio_toggle();
          
          // free up this task container
          pThisTask->cb            = NULL;
