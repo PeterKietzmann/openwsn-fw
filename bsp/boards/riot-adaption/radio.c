@@ -130,6 +130,10 @@ void radio_rfOn(void) {
 void radio_rfOff(void) {
     netopt_state_t state = NETOPT_STATE_OFF;
     radio_vars.dev->driver->set(radio_vars.dev, NETOPT_STATE, &(state), sizeof(netopt_state_t));
+    leds_radio_off();
+
+    // change state
+    radio_vars.state = RADIOSTATE_RFOFF;
 }
 // TX
 void radio_loadPacket(uint8_t* packet, uint16_t len) {
@@ -153,6 +157,7 @@ void radio_txEnable(void) {
     // change state
     radio_vars.state = RADIOSTATE_ENABLING_TX;
 
+   leds_radio_on();
     // change state
     radio_vars.state = RADIOSTATE_TX_ENABLED;
 }
@@ -165,6 +170,8 @@ void radio_rxEnable(void) {
     DEBUG("radio_rxEnable\n");
     // change state
     radio_vars.state = RADIOSTATE_ENABLING_RX;
+
+   leds_radio_on();
 
     netopt_state_t state = NETOPT_STATE_IDLE;
     radio_vars.dev->driver->set(radio_vars.dev, NETOPT_STATE, &(state), sizeof(netopt_state_t));
@@ -181,7 +188,8 @@ void radio_getReceivedFrame(uint8_t* bufRead,
                             int8_t* rssi,
                             uint8_t* lqi,
                             bool* crc) {
-    int bytes_expected = radio_vars.dev->driver->recv(radio_vars.dev, NULL, 0, NULL);
+    netdev_ieee802154_rx_info_t rx_info;
+    int bytes_expected = radio_vars.dev->driver->recv(radio_vars.dev, bufRead, maxBufLen, &rx_info);
 
     if (bytes_expected) {
         netdev_ieee802154_rx_info_t rx_info;
@@ -203,9 +211,13 @@ void radio_getReceivedFrame(uint8_t* bufRead,
 // interrupt handlers
 //kick_scheduler_t    radio_isr(void);
 
+PORT_TIMER_WIDTH capturedTime = 0u;
 static void _event_cb(netdev_t *dev, netdev_event_t event)
 {
     if (event == NETDEV_EVENT_ISR) {
+        // TODO is this a proper location?
+        /* capture the time */
+        capturedTime = sctimer_readCounter();
         assert(_pid != KERNEL_PID_UNDEF);
         msg_t msg;
 
@@ -217,25 +229,23 @@ static void _event_cb(netdev_t *dev, netdev_event_t event)
         }
     }
     else {
-        // TODO is this a proper location?
-        /* capture the time */
-        PORT_TIMER_WIDTH capturedTime = sctimer_readCounter();
         DEBUG("ow_netdev: event triggered -> %i\n", event);
+        assert( capturedTime != 0u);
         switch (event) {
             case NETDEV_EVENT_RX_STARTED:
-            radio_vars.startFrame_cb(capturedTime);
-            DEBUG("NETDEV_EVENT_RX_STARTED\n");
-            break;
+                radio_vars.startFrame_cb(capturedTime);
+                DEBUG("NETDEV_EVENT_RX_STARTED\n");
+                break;
             case NETDEV_EVENT_RX_COMPLETE:
-            radio_vars.endFrame_cb(capturedTime);
-            DEBUG("NETDEV_EVENT_RX_COMPLETE\n");
-            break;
+                radio_vars.endFrame_cb(capturedTime);
+                DEBUG("NETDEV_EVENT_RX_COMPLETE\n");
+                break;
             case NETDEV_EVENT_TX_COMPLETE:
-            radio_vars.endFrame_cb(capturedTime);
-            DEBUG("NETDEV_EVENT_TX_COMPLETE\n");
-            break;
+                radio_vars.endFrame_cb(capturedTime);
+                DEBUG("NETDEV_EVENT_TX_COMPLETE\n");
+                break;
             default:
-            break;
+                break;
         }
     }
 }
