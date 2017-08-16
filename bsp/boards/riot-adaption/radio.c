@@ -1,13 +1,19 @@
-
+/**
+ * Author: Peter Kietzmann (peter.kietzmann@haw-hamburg.de)
+ *         Oliver Hahm (peretuset@openmote.com)
+ * Date:   July 2017
+ * Description: Implements RIOTs netdev API agains OpenWSNs radio API
+ */
 
 #include "radio.h"
+#include "leds.h"
 #include "sctimer.h"
 
 #include "net/netdev.h"
 #include "net/netopt.h"
 
 
-#define ENABLE_DEBUG                (1)
+#define ENABLE_DEBUG                (0)
 #include "debug.h"
 
 #ifdef MODULE_AT86RF2XX
