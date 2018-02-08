@@ -5,11 +5,11 @@
 #include "forwarding.h"
 #include "openqueue.h"
 // applications
-#include "opencoap.h"
-#include "uecho.h"
-#include "uinject.h"
-#include "userialbridge.h"
-#include "rrt.h"
+// #include "opencoap.h"
+// #include "uecho.h"
+// #include "uinject.h"
+// #include "userialbridge.h"
+// #include "rrt.h"
 
 //=========================== variables =======================================
 

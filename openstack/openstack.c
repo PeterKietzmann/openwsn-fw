@@ -33,7 +33,7 @@
 //-- 04-TRAN
 #include "openudp.h"
 //===== applications
-#include "openapps.h"
+//#include "openapps.h"
 
 //=========================== variables =======================================
 
@@ -73,9 +73,9 @@ void openstack_init(void) {
    icmpv6rpl_init();
    //-- 04-TRAN
    openudp_init();
-
+   
    //===== applications
-   openapps_init();
+   //openapps_init();
 
    openserial_printInfo(
       COMPONENT_OPENWSN,ERR_BOOTED,
