@@ -6,7 +6,7 @@
 
 #include "opendefs.h"
 #include "scheduler.h"
-#include "board.h"
+#include "board_ow.h"
 #include "debugpins.h"
 #include "leds.h"
 
