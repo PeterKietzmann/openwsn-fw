@@ -12,7 +12,7 @@
 \author Thomas Watteyne <watteyne@eecs.berkeley.edu>, February 2012.
 */
 
-#include "board.h"
+#include "board_ow.h"
 
 //=========================== define ==========================================
 
