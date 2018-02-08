@@ -42,6 +42,10 @@ enum{
 
 //=========================== prototypes ======================================
 
+void sniffer_setListeningChannel(uint8_t channel) {
+    (void)channel;
+    return;
+}
 
 // printing
 owerror_t openserial_printInfoErrorCritical(

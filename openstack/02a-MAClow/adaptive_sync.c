@@ -170,6 +170,7 @@ void adaptive_sync_calculateCompensatedSlots(int16_t timeCorrection) {
 
 Once compensationTimeout == 0, extend or shorten current slot length for one tick.
 */
+void radiotimer_setPeriod(PORT_RADIOTIMER_WIDTH period);
 void adaptive_sync_countCompensationTimeout(void) {
    uint16_t newSlotDuration;
    
