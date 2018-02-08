@@ -34,7 +34,7 @@
 //-- 04-TRAN
 #include "openudp.h"
 //===== applications
-#include "openapps.h"
+//#include "openapps.h"
 
 //=========================== variables =======================================
 
@@ -75,7 +75,7 @@ void openstack_init(void) {
    openudp_init();
    
    //===== applications
-   openapps_init();
+   //openapps_init();
    
    openserial_printInfo(
       COMPONENT_OPENWSN,ERR_BOOTED,
