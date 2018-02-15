@@ -115,7 +115,11 @@ void ieee154e_init(void) {
     memset(&ieee154e_dbg,0,sizeof(ieee154e_dbg_t));
     
     // set singleChannel to 0 to enable channel hopping.
-    ieee154e_vars.singleChannel     = 0;
+#if OW_RIOT_SINGLE_CHANNEL
+    ieee154e_vars.singleChannel     = OW_RIOT_SINGLE_CHANNEL;
+#else
+    ieee154e_vars.singleChannel     = 0; // 0 means channel hopping
+#endif
     ieee154e_vars.isAckEnabled      = TRUE;
     ieee154e_vars.isSecurityEnabled = FALSE;
     ieee154e_vars.slotDuration      = TsSlotDuration;
@@ -540,7 +544,11 @@ port_INLINE void activity_synchronize_newSlot(void) {
         radio_rfOff();
         
         // update record of current channel
+#if OW_RIOT_SINGLE_CHANNEL
+        ieee154e_vars.freq = OW_RIOT_SINGLE_CHANNEL;
+#else
         ieee154e_vars.freq = (openrandom_get16b()&0x0F) + 11;
+#endif
         
         // configure the radio to listen to the default synchronizing channel
         radio_setFrequency(ieee154e_vars.freq);
