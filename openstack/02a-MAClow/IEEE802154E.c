@@ -17,10 +17,18 @@
 #include "sctimer.h"
 #include "openrandom.h"
 #include "msf.h"
+#ifdef OW_MAC_ONLY
+#include "event.h"
+#endif
 
 //=========================== definition ======================================
 
 //=========================== variables =======================================
+#ifdef OW_MAC_ONLY
+extern event_t ev_sixtop_notify_send_done;
+extern event_t ev_sixtop_notify_receive;
+extern event_queue_t queue;
+#endif
 
 ieee154e_vars_t    ieee154e_vars;
 ieee154e_stats_t   ieee154e_stats;
@@ -2732,7 +2740,11 @@ void notif_sendDone(OpenQueueEntry_t* packetSent, owerror_t error) {
     // COMPONENT_IEEE802154E_TO_RES so RES can knows it's for it
     packetSent->owner              = COMPONENT_IEEE802154E_TO_SIXTOP;
     // post RES's sendDone task
+#ifdef OW_MAC_ONLY
+    event_post(&queue, &ev_sixtop_notify_send_done);
+#else
     scheduler_push_task(task_sixtopNotifSendDone,TASKPRIO_SIXTOP_NOTIF_TXDONE);
+#endif
     // wake up the scheduler
     SCHEDULER_WAKEUP();
 }
@@ -2746,7 +2758,11 @@ void notif_receive(OpenQueueEntry_t* packetReceived) {
     // COMPONENT_IEEE802154E_TO_SIXTOP so sixtop can knows it's for it
     packetReceived->owner          = COMPONENT_IEEE802154E_TO_SIXTOP;
     // post RES's Receive task
+#ifdef OW_MAC_ONLY
+    event_post(&queue, &ev_sixtop_notify_receive);
+#else
     scheduler_push_task(task_sixtopNotifReceive,TASKPRIO_SIXTOP_NOTIF_RX);
+#endif
     // wake up the scheduler
     SCHEDULER_WAKEUP();
 }

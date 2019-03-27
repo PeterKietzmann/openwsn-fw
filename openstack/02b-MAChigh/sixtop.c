@@ -7,7 +7,9 @@
 #include "iphc.h"
 #include "packetfunctions.h"
 #include "openrandom.h"
+#ifndef OW_MAC_ONLY
 #include "scheduler.h"
+#endif
 #include "opentimers.h"
 #include "debugpins.h"
 #include "leds.h"
@@ -15,6 +17,9 @@
 #include "IEEE802154_security.h"
 #include "idmanager.h"
 #include "schedule.h"
+#ifdef OW_MAC_ONLY
+#include "event.h"
+#endif
 
 //=========================== define ==========================================
 
@@ -27,6 +32,11 @@ sixtop_vars_t sixtop_vars;
 
 //=========================== prototypes ======================================
 
+#ifdef OW_MAC_ONLY
+extern event_t ev_sixtop_management_fired;
+extern event_t ev_sixtop_sendEb_fired;
+extern event_queue_t queue;
+#endif
 // send internal
 owerror_t     sixtop_send_internal(
    OpenQueueEntry_t*    msg,
@@ -630,7 +640,12 @@ owerror_t sixtop_send_internal(
 
 // timer interrupt callbacks
 void sixtop_sendingEb_timer_cb(opentimers_id_t id){
+#ifdef OW_MAC_ONLY
+    //scheduler_push_task(timer_sixtop_sendEb_fired,TASKPRIO_SIXTOP);
+    event_post(&queue, &ev_sixtop_sendEb_fired);
+#else
     scheduler_push_task(timer_sixtop_sendEb_fired,TASKPRIO_SIXTOP);
+#endif
     // update the period
     sixtop_vars.periodMaintenance  = 872 +(openrandom_get16b()&0xff);
     opentimers_scheduleIn(
@@ -643,11 +658,17 @@ void sixtop_sendingEb_timer_cb(opentimers_id_t id){
 }
 
 void sixtop_maintenance_timer_cb(opentimers_id_t id) {
+#ifdef OW_MAC_ONLY
+    event_post(&queue, &ev_sixtop_management_fired);
+#else
     scheduler_push_task(timer_sixtop_management_fired,TASKPRIO_SIXTOP);
+#endif
 }
 
 void sixtop_timeout_timer_cb(opentimers_id_t id) {
+#ifndef OW_MAC_ONLY
     scheduler_push_task(timer_sixtop_six2six_timeout_fired,TASKPRIO_SIXTOP_TIMEOUT);
+#endif
 }
 
 //======= EB/KA task
