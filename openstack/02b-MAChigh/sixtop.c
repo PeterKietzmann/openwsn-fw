@@ -22,6 +22,10 @@
 #endif
 
 //=========================== define ==========================================
+#ifdef OW_MAC_ONLY
+extern void upper_sendDone(OpenQueueEntry_t* msg, owerror_t error);
+extern void upper_receive(OpenQueueEntry_t* msg);
+#endif
 
 // in seconds: sixtop maintaince is called every 30 seconds
 #define MAINTENANCE_PERIOD        30
@@ -462,7 +466,11 @@ void task_sixtopNotifSendDone(void) {
             break;
         default:
             // send the rest up the stack
+#ifdef OW_MAC_ONLY
+            upper_sendDone(msg,msg->l2_sendDoneError);
+#else
             iphc_sendDone(msg,msg->l2_sendDoneError);
+#endif
             break;
     }
 }
@@ -527,7 +535,11 @@ void task_sixtopNotifReceive(void) {
                 break;
             }
             // send to upper layer
+#ifdef OW_MAC_ONLY
+            upper_receive(msg);
+#else
             iphc_receive(msg);
+#endif
         } else {
             // free up the RAM
             openqueue_freePacketBuffer(msg);

@@ -759,6 +759,10 @@ port_INLINE void activity_synchronize_endOfFrame(PORT_TIMER_WIDTH capturedTime) 
       
       // declare synchronized
       changeIsSync(TRUE);
+
+#ifdef OW_MAC_ONLY
+      ieee154e_indicate_sync();
+#endif
       // log the info
       openserial_printInfo(COMPONENT_IEEE802154E,ERR_SYNCHRONIZED,
                             (errorparameter_t)ieee154e_vars.slotOffset,
@@ -844,6 +848,10 @@ port_INLINE void activity_ti1ORri1(void) {
         
             // declare myself desynchronized
             changeIsSync(FALSE);
+
+#ifdef OW_MAC_ONLY
+            ieee154e_indicate_sync_loss();
+#endif
             
             // log the error
             openserial_printError(COMPONENT_IEEE802154E,ERR_DESYNCHRONIZED,
