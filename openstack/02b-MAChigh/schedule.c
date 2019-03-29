@@ -47,6 +47,7 @@ void schedule_init(void) {
         schedule_startDAGroot();
     }
     
+#ifndef OW_MAC_ONLY
     // serial RX slot(s)
     start_slotOffset += SCHEDULE_MINIMAL_6TISCH_ACTIVE_CELLS;
     memset(&temp_neighbor,0,sizeof(temp_neighbor));
@@ -59,6 +60,7 @@ void schedule_init(void) {
             &temp_neighbor                         // neighbor
         );
     }
+#endif
 }
 
 /**
