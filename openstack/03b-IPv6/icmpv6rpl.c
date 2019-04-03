@@ -222,7 +222,7 @@ owerror_t icmpv6rpl_getRPLDODAGid(uint8_t* address_128b){
 \param[in] error Outcome of the sending.
 */
 void icmpv6rpl_sendDone(OpenQueueEntry_t* msg, owerror_t error) {
-
+   (void)error;
    // take ownership over that packet
    msg->owner = COMPONENT_ICMPv6RPL;
 
@@ -648,6 +648,7 @@ void icmpv6rpl_killPreferredParent(void) {
     already. No need to push a task again.
 */
 void icmpv6rpl_timer_DIO_cb(opentimers_id_t id) {
+    (void)id;
     icmpv6rpl_timer_DIO_task();
 }
 
@@ -814,7 +815,7 @@ void sendDIO(void) {
     already. No need to push a task again.
 */
 void icmpv6rpl_timer_DAO_cb(opentimers_id_t id) {
-
+    (void)id;
     icmpv6rpl_timer_DAO_task();
 }
 
