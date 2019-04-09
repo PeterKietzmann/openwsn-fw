@@ -368,6 +368,7 @@ owerror_t sixtop_send(OpenQueueEntry_t *msg) {
 
     open_addr_t addressToWrite;
     
+#ifndef OW_MAC_ONLY
     if (
         idmanager_getIsDAGroot() == FALSE               &&
         (
@@ -385,6 +386,7 @@ owerror_t sixtop_send(OpenQueueEntry_t *msg) {
         return E_FAIL;
     }
 
+#endif
     // set metadata
     msg->owner        = COMPONENT_SIXTOP;
     msg->l2_frameType = IEEE154_TYPE_DATA;
@@ -770,6 +772,7 @@ port_INLINE void sixtop_sendEB(void) {
         return;
     }
 
+#ifndef OW_MAC_ONLY
     if (
         idmanager_getIsDAGroot() == FALSE &&
         (
@@ -790,6 +793,7 @@ port_INLINE void sixtop_sendEB(void) {
         return;
     }
    
+#endif
     if (sixtop_vars.busySendingEB==TRUE) {
         // don't continue if I'm still sending a previous EB
         return;
