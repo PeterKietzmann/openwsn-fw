@@ -34,6 +34,14 @@ typedef struct {
 
 END_PACK
 
+#ifdef OW_MAC_ONLY
+typedef enum {
+    ROLE_PAN_COORDINATOR=0,
+    ROLE_COORDINATOR,
+    ROLE_LEAF
+} idmanager_role_t;
+
+#endif
 //=========================== module variables ================================
 
 typedef struct {
@@ -45,6 +53,9 @@ typedef struct {
    bool          slotSkip;
    uint8_t       joinKey[16];
    asn_t         joinAsn;
+#ifdef OW_MAC_ONLY
+   idmanager_role_t  role;
+#endif
 } idmanager_vars_t;
 
 //=========================== prototypes ======================================
@@ -60,6 +71,11 @@ void         idmanager_triggerAboutRoot(void);
 void         idmanager_setJoinKey(uint8_t *key);
 void         idmanager_setJoinAsn(asn_t *asn);
 void         idmanager_getJoinKey(uint8_t **pKey);
+#ifdef OW_MAC_ONLY
+owerror_t    idmanager_setRole(idmanager_role_t newRole);
+bool         idmanager_isPanCoordinator(void);
+bool         idmanager_isCoordinator(void);
+#endif
 
 bool         debugPrint_id(void);
 bool         debugPrint_joined(void);

@@ -43,7 +43,11 @@ void schedule_init(void) {
     schedule_vars.maxActiveSlots = MAXACTIVESLOTS;
     
     start_slotOffset = SCHEDULE_MINIMAL_6TISCH_SLOTOFFSET;
+#ifdef OW_MAC_ONLY
+    if (idmanager_isPanCoordinator()==true) {
+#else
     if (idmanager_getIsDAGroot()==TRUE) {
+#endif
         schedule_startDAGroot();
     }
     

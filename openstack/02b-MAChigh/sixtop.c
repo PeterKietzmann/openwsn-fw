@@ -743,6 +743,7 @@ This is one of the MAC management tasks. This function inlines in the
 timers_res_fired() function, but is declared as a separate function for better
 readability of the code.
 */
+
 port_INLINE void sixtop_sendEB(void) {
     OpenQueueEntry_t* eb;
     uint8_t     i;
@@ -754,8 +755,13 @@ port_INLINE void sixtop_sendEB(void) {
     if (
         (ieee154e_isSynch()==FALSE)                     ||
         (IEEE802154_security_isConfigured()==FALSE)     ||
+#ifdef OW_MAC_ONLY
+        (idmanager_isPanCoordinator() == false &&
+         idmanager_isCoordinator() == false)
+#else
         (icmpv6rpl_getMyDAGrank()==DEFAULTDAGRANK)      ||
         icmpv6rpl_daoSent()==FALSE
+#endif
     ) {
         // I'm not sync'ed, or did not join, or did not acquire a DAGrank or did not send out a DAO
         // before starting to advertize the network, we need to make sure that we are reachable downwards,

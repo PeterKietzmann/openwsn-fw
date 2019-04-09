@@ -140,7 +140,11 @@ void ieee154e_init(void) {
         sizeof(ieee154e_vars.chTemplate)
     );
     
+#ifdef OW_MAC_ONLY
+    if (idmanager_isPanCoordinator()==true) {
+#else
     if (idmanager_getIsDAGroot()==TRUE) {
+#endif
         changeIsSync(TRUE);
     } else {
         changeIsSync(FALSE);
@@ -300,7 +304,11 @@ void isr_ieee154e_newSlot(opentimers_id_t id) {
     ieee154e_vars.slotDuration          = TsSlotDuration;
     // radiotimer_setPeriod(ieee154e_vars.slotDuration);
    if (ieee154e_vars.isSync==FALSE) {
+#ifdef OW_MAC_ONLY
+      if (idmanager_isPanCoordinator()==true) {
+#else
       if (idmanager_getIsDAGroot()==TRUE) {
+#endif
          changeIsSync(TRUE);
          ieee154e_resetAsn();
          ieee154e_vars.nextActiveSlotOffset = schedule_getNextActiveSlotOffset();
@@ -839,7 +847,11 @@ port_INLINE void activity_ti1ORri1(void) {
     }
     
     // desynchronize if needed
+#ifdef OW_MAC_ONLY
+    if (idmanager_isPanCoordinator()==false) {
+#else
     if (idmanager_getIsDAGroot()==FALSE) {
+#endif
         if(ieee154e_vars.deSyncTimeout > ieee154e_vars.numOfSleepSlots){
             ieee154e_vars.deSyncTimeout -= ieee154e_vars.numOfSleepSlots;
         } else {
@@ -892,7 +904,11 @@ port_INLINE void activity_ti1ORri1(void) {
         
         // find the next one
         ieee154e_vars.nextActiveSlotOffset = schedule_getNextActiveSlotOffset();
+#ifdef OW_MAC_ONLY
+        if (idmanager_getIsSlotSkip() && idmanager_isPanCoordinator()==false) {
+#else
         if (idmanager_getIsSlotSkip() && idmanager_getIsDAGroot()==FALSE) {
+#endif
             if (ieee154e_vars.nextActiveSlotOffset>ieee154e_vars.slotOffset) {
                 ieee154e_vars.numOfSleepSlots = ieee154e_vars.nextActiveSlotOffset-ieee154e_vars.slotOffset;
             } else {
@@ -1098,7 +1114,11 @@ port_INLINE void activity_ti1ORri1(void) {
                 ieee154e_vars.nextActiveSlotOffset = schedule_getNextActiveSlotOffset();
             }
             // possibly skip additional slots if enabled
+#ifdef OW_MAC_ONLY
+            if (idmanager_getIsSlotSkip() && idmanager_isPanCoordinator()==false) {
+#else
             if (idmanager_getIsSlotSkip() && idmanager_getIsDAGroot()==FALSE) {
+#endif
                 if (ieee154e_vars.nextActiveSlotOffset>ieee154e_vars.slotOffset) {
                     ieee154e_vars.numOfSleepSlots = ieee154e_vars.nextActiveSlotOffset-ieee154e_vars.slotOffset+NUMSERIALRX-1;
                 } else {
@@ -1594,7 +1614,11 @@ port_INLINE void activity_ti9(PORT_TIMER_WIDTH capturedTime) {
         }
         
         if (
+#ifdef OW_MAC_ONLY
+            idmanager_isPanCoordinator()==false &&
+#else
             idmanager_getIsDAGroot()==FALSE &&
+#endif
             icmpv6rpl_isPreferredParent(&(ieee154e_vars.ackReceived->l2_nextORpreviousHop))
         ) {
             synchronizeAck(ieee802514_header.timeCorrection);
@@ -1968,7 +1992,11 @@ port_INLINE void activity_ri5(PORT_TIMER_WIDTH capturedTime) {
             // or in case I'm in the middle of the join process when parent is not yet selected
             // or in case I don't have a dedicated cell to my parent yet
             if (
+#ifdef OW_MAC_ONLY
+                idmanager_isPanCoordinator()                                    == false && 
+#else
                 idmanager_getIsDAGroot()                                    == FALSE && 
+#endif
                 (
                     icmpv6rpl_isPreferredParent(&(ieee154e_vars.dataReceived->l2_nextORpreviousHop)) ||
                     IEEE802154_security_isConfigured()                      == FALSE ||
@@ -2201,7 +2229,11 @@ port_INLINE void activity_ri9(PORT_TIMER_WIDTH capturedTime) {
    // clear local variable
    ieee154e_vars.ackToSend = NULL;
    
+#ifdef OW_MAC_ONLY
+    if ((idmanager_isPanCoordinator()==false && 
+#else
     if ((idmanager_getIsDAGroot()==FALSE && 
+#endif
         icmpv6rpl_isPreferredParent(&(ieee154e_vars.dataReceived->l2_nextORpreviousHop))) ||
         IEEE802154_security_isConfigured() == FALSE) {
         synchronizePacket(ieee154e_vars.syncCapturedTime);

@@ -25,8 +25,14 @@ void idmanager_init(void) {
    // isDAGroot
 #ifdef DAGROOT
    idmanager_vars.isDAGroot            = TRUE;
+#ifdef OW_MAC_ONLY
+   idmanager_vars.role     = ROLE_PAN_COORDINATOR;
+#endif
 #else
    idmanager_vars.isDAGroot            = FALSE;
+#ifdef OW_MAC_ONLY
+   idmanager_vars.role     = ROLE_LEAF;
+#endif
 #endif
    
    // myPANID
@@ -98,6 +104,28 @@ bool idmanager_getIsSlotSkip(void) {
    return res;
 }
 
+#ifdef OW_MAC_ONLY
+owerror_t idmanager_setRole(idmanager_role_t newRole)
+{
+   INTERRUPT_DECLARATION();
+   DISABLE_INTERRUPTS();
+   idmanager_vars.role = newRole;
+   ENABLE_INTERRUPTS();
+   return E_SUCCESS;
+}
+
+bool idmanager_isCoordinator(void)
+{
+    return idmanager_vars.role == ROLE_PAN_COORDINATOR ||
+        idmanager_vars.role == ROLE_COORDINATOR;
+}
+
+bool idmanager_isPanCoordinator(void)
+{
+    return idmanager_vars.role == ROLE_PAN_COORDINATOR;
+}
+
+#endif
 open_addr_t* idmanager_getMyID(uint8_t type) {
    open_addr_t* res;
    INTERRUPT_DECLARATION();
