@@ -127,6 +127,7 @@ owerror_t openqueue_freePacketBuffer(OpenQueueEntry_t* pkt) {
                          (errorparameter_t)0,
                          (errorparameter_t)0);
    ENABLE_INTERRUPTS();
+   puts("QUEUE IS FULL");
    return E_FAIL;
 }
 

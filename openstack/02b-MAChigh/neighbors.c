@@ -10,7 +10,7 @@
 
 //=========================== variables =======================================
 
-static neighbors_vars_t neighbors_vars;
+neighbors_vars_t neighbors_vars;
 
 //=========================== prototypes ======================================
 
@@ -652,6 +652,7 @@ void registerNewNeighbor(open_addr_t* address,
                          bool         joinPrioPresent,
                          uint8_t      joinPrio,
                          bool         insecure) {
+   puts("registerNewNeighbor");
    uint8_t  i;
    // filter errors
    if (address->type!=ADDR_64B) {
@@ -714,6 +715,7 @@ bool isNeighbor(open_addr_t* neighbor) {
 }
 
 void removeNeighbor(uint8_t neighborIndex) {
+  puts("removeNeighbor");
    neighbors_vars.neighbors[neighborIndex].used                      = FALSE;
    neighbors_vars.neighbors[neighborIndex].parentPreference          = 0;
    neighbors_vars.neighbors[neighborIndex].stableNeighbor            = FALSE;
