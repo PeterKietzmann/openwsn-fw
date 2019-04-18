@@ -708,6 +708,8 @@ This is one of the MAC management tasks. This function inlines in the
 timers_res_fired() function, but is declared as a separate function for better
 readability of the code.
 */
+#include "openqueue.h"
+extern openqueue_vars_t openqueue_vars;
 port_INLINE void sixtop_sendEB(void) {
     OpenQueueEntry_t* eb;
     uint8_t     i;
@@ -759,6 +761,12 @@ port_INLINE void sixtop_sendEB(void) {
    
     if (sixtop_vars.busySendingEB==TRUE) {
         // don't continue if I'm still sending a previous EB
+        puts("EB err still sending previos");
+        for (uint8_t i = 0; i < QUEUELENGTH; i++) {
+          printf("Creator: 0x%2x, ", openqueue_vars.queue[i].creator);
+          printf("Owner: 0x%2x\n", openqueue_vars.queue[i].owner);
+        }
+        __BKPT(1);
         return;
     }
     

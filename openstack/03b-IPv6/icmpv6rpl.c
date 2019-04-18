@@ -453,6 +453,7 @@ void icmpv6rpl_updateMyDAGrankAndParentSelection(void) {
     }
    
     if (foundBetterParent) {
+        puts("foundBetterParent");
         icmpv6rpl_vars.haveParent=TRUE;
         if (!prevHadParent) {
             // in case preParent is killed before calling this function, clear the preferredParent flag
@@ -591,6 +592,7 @@ void icmpv6rpl_indicateRxDIO(OpenQueueEntry_t* msg) {
 }
 
 void icmpv6rpl_killPreferredParent(void) {
+  printf("icmpv6rpl_killPreferredParent\n");
     icmpv6rpl_vars.haveParent=FALSE;
     if (idmanager_getIsDAGroot()==TRUE) {
        icmpv6rpl_vars.myDAGrank=MINHOPRANKINCREASE;

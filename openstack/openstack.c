@@ -64,7 +64,7 @@ void openstack_init(void) {
    neighbors_init();
    msf_init();
    //-- 03a-IPHC
-   openbridge_init();
+   //openbridge_init();
    iphc_init();
    //-- 03b-IPv6
    forwarding_init();

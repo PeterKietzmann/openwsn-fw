@@ -37,15 +37,15 @@ void scheduler_init(void) {
 void scheduler_start(void) {
    taskList_item_t* pThisTask;
 
-   msg_t msg;
-   msg_t msg_queue[8];
+   //msg_t msg;
+   //msg_t msg_queue[8];
    /* initialize message queue */
-   msg_init_queue(msg_queue, 8);
+   //msg_init_queue(msg_queue, 8);
 
    openwsn_sched_pid = thread_getpid();
 
    while (1) {
-      if(msg.type == OW_SCHED_MSG_TYPE_EVENT) {
+      //if(msg.type == OW_SCHED_MSG_TYPE_EVENT) {
          while(scheduler_vars.task_list!=NULL) {
             // there is still at least one task in the linked-list of tasks
 
@@ -59,7 +59,6 @@ void scheduler_start(void) {
             scheduler_vars.task_list = pThisTask->next;
 
             ENABLE_INTERRUPTS();
-
             // execute the current task
             pThisTask->cb();
 
@@ -69,10 +68,11 @@ void scheduler_start(void) {
             pThisTask->next          = NULL;
             scheduler_dbg.numTasksCur--;
          }
-      }
+      //}
       debugpins_task_clr();
       board_sleep();
-      msg_receive(&msg);
+      //msg_receive(&msg);
+      thread_flags_wait_any(OW_SCHED_MSG_TYPE_EVENT);
       debugpins_task_set();                      // IAR should halt here if nothing to do
    }
 }
@@ -92,6 +92,8 @@ void scheduler_start(void) {
    }
    if (taskContainer>&scheduler_vars.taskBuf[TASK_LIST_DEPTH-1]) {
       // task list has overflown. This should never happpen!
+      puts("SCHEDULER TASK LIST OVERFLOW");
+      //msg_queue_print();
    
       // we can not print from within the kernel. Instead:
       // blink the error LED
@@ -120,9 +122,14 @@ void scheduler_start(void) {
    
    ENABLE_INTERRUPTS();
 
-   msg_t msg;
-   msg.type = OW_SCHED_MSG_TYPE_EVENT;
-   msg_send(&msg, openwsn_sched_pid);
+   //msg_t msg;
+   //msg.type = OW_SCHED_MSG_TYPE_EVENT;
+   // int ret = msg_send(&msg, openwsn_sched_pid);
+   // if(ret < 1) {
+   //    printf("error sending msg. ret=%i\n", ret);
+   // }
+   thread_t *thread = (thread_t*) thread_get(openwsn_sched_pid);
+   thread_flags_set(thread, OW_SCHED_MSG_TYPE_EVENT);
 }
 
 //=========================== private =========================================
